@@ -166,13 +166,13 @@ module Asciidoctor
       # converter's constructor.
       #
       # If a custom Converter is found to convert the specified backend, it is
-      # instantiated (if necessary) and returned immediately. If a custom
-      # Converter is not found, an attempt is made to resolve a built-in
-      # converter. If the `:template_dirs` key is found in the Hash passed as the
-      # second argument, a {CompositeConverter} is created that delegates to a
-      # {TemplateConverter} and, if resolved, the built-in converter. If the
-      # `:template_dirs` key is not found, the built-in converter is returned
-      # or nil if no converter is resolved.
+      # instantiated (if necessary). If a custom Converter is not found, an
+      # attempt is made to resolve a built-in converter. If the `:template_dirs`
+      # key is found in the Hash passed as the second argument, a
+      # {CompositeConverter} is created that delegates to a {TemplateConverter}
+      # and, if resolved, the converter. If the `:template_dirs` key is not
+      # found, the built-in converter is returned or nil if no converter is
+      # resolved.
       #
       # backend - the String backend name
       # opts    - an optional Hash of options that get passed on to the converter's
@@ -182,11 +182,11 @@ module Asciidoctor
       #
       # Returns the [Converter] object
       def create backend, opts = {}
-        if (converter = resolve backend)
-          return ::Class === converter ? (converter.new backend, opts) : converter
+        base_converter = if (converter = resolve backend)
+          ::Class === converter ? (converter.new backend, opts) : converter
         end
 
-        base_converter = case backend
+        base_converter ||= case backend
         when 'html5'
           unless defined? ::Asciidoctor::Converter::Html5Converter
             require 'asciidoctor/converter/html5'.to_s
